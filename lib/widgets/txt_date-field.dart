@@ -31,11 +31,11 @@ class DatePickerField extends StatefulWidget {
 }
 
 class _DatePickerFieldState extends State<DatePickerField> {
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime currentDate = widget.initialDate ?? DateTime.now();
     final DateTime firstDate = widget.firstDate ?? DateTime(2000);
     final DateTime lastDate = widget.lastDate ?? DateTime(2100);
-
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: currentDate,
@@ -58,14 +58,31 @@ class _DatePickerFieldState extends State<DatePickerField> {
       textAlign: TextAlign.left,
       style: const TextStyle(color: Colors.black, fontSize: 16),
       controller: widget.controller,
-      onTap: () {
-        if (widget.isEnabled && !widget.isReadOnly) {
-          _selectDate(context);
+      onTap: ()async {
+        if (widget.isEnabled) {
+       // await   _selectDate(context);\
+          final DateTime currentDate = widget.initialDate ?? DateTime.now();
+          final DateTime firstDate = widget.firstDate ?? DateTime(2000);
+          final DateTime lastDate = widget.lastDate ?? DateTime(2100);
+          print("===================");
+          final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: currentDate,
+            firstDate: firstDate,
+            lastDate: lastDate,
+          );
+
+          if (pickedDate != null) {
+            setState(() {
+              widget.controller.text = "${pickedDate.toLocal()}".split(' ')[0];
+            });
+          }
         }
       },
       readOnly: widget.isReadOnly,
       enabled: widget.isEnabled,
       validator: widget.validator,
+
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.all(10),
         fillColor: Colors.white,
