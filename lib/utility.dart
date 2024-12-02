@@ -2,6 +2,8 @@ library utility;
  export 'package:get/get.dart';
  export 'package:utility/shared_pref_service/SharedService.dart';
  export 'package:utility/widgets/txt_field.dart';
+export 'package:utility/widgets/txt_date-field.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:utility/shared_pref_service/SharedService.dart';
 
