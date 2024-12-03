@@ -2,42 +2,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedService {
   // Singleton instance
-  static SharedService? _instance;
-
-  late SharedPreferences _preferences;
+  static final SharedService _instance = SharedService._internal();
+  static late SharedPreferences _preferences;
 
   // Private constructor to enforce singleton pattern
-  SharedService._internal() {
-    _initialize();
-  }
+  SharedService._internal();
 
   // Factory constructor to return the singleton instance
   factory SharedService() {
-    _instance ??= SharedService._internal();
-    return _instance!;
+    return _instance;
   }
 
-  // Initialization method
-  void _initialize() {
-    SharedPreferences.getInstance().then((prefs) {
-      _preferences = prefs;
-    });
+  // Initialization method (called before using SharedService)
+  static Future<void> initialize() async {
+    _preferences = await SharedPreferences.getInstance();
   }
 
   String getUsername({String? key}) {
-    return _preferences.getString(key ?? "username")??"";
+    return _preferences.getString(key ?? "username") ?? "";
   }
 
   String getToken({String? key}) {
-    return _preferences.getString(key ?? "token")??"";
+    return _preferences.getString(key ?? "token") ?? "";
   }
 
   String getRefreshToken({String? key}) {
-    return _preferences.getString(key ?? "refreshToken")??"";
+    return _preferences.getString(key ?? "refreshToken") ?? "";
   }
 
   String getUserid({String? key}) {
-    return _preferences.getString(key ?? "userId")??"";
+    return _preferences.getString(key ?? "userId") ?? "";
   }
 
   // Setter for String
