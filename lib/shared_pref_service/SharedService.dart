@@ -18,7 +18,7 @@ class SharedService {
   // Initialization method (called before using SharedService)
   static Future<void> initialize() async {
     _preferences = await SharedPreferences.getInstance();
-    log("Initialized shared preference");
+    log("=======Initialized shared preference");
   }
 
   String getUsername({String? key}) {
