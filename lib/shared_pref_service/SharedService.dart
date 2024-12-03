@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedService {
@@ -16,6 +18,7 @@ class SharedService {
   // Initialization method (called before using SharedService)
   static Future<void> initialize() async {
     _preferences = await SharedPreferences.getInstance();
+    log("Initialized shared preference");
   }
 
   String getUsername({String? key}) {
