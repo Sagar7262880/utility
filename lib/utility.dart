@@ -11,4 +11,4 @@ export 'package:flutter_typeahead/flutter_typeahead.dart';
 export 'package:utility/widgets/dynamic_dropdown.dart';
 export 'package:utility/widgets/simple_dropdown.dart';
 export 'package:shared_preferences/shared_preferences.dart';
-
+export 'dio_service/DioService.dart';
