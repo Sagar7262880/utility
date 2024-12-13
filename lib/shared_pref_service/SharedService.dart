@@ -7,7 +7,9 @@ class SharedService {
   static SharedPreferences? _preferences;
 
   // Private constructor to enforce singleton pattern
-  SharedService._internal();
+  SharedService._internal() {
+    SharedService.initialize();
+  }
 
   // Factory constructor to return the singleton instance
   factory SharedService() {

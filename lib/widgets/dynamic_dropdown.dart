@@ -1,112 +1,149 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'dart:async';
+import 'package:utility/constant/constant_string.dart';
 
-class DynamicDropdown extends StatefulWidget {
+class DynamicDropDown extends StatefulWidget {
+  final TextEditingController controller;
   final String labelText;
+  final bool isSearchable, isValidate;
   final void Function(dynamic) onChanged;
   final void Function(dynamic) onSuggestionSelected;
-  final FutureOr<Iterable<dynamic>> Function(dynamic) onSuggestionCallback;
+  final FutureOr<Iterable<dynamic>> Function(dynamic) onSuggestionCallBack;
   final Widget Function(BuildContext context, dynamic) suggestionBuilder;
-  final bool isSearchable;
+  final String? Function(dynamic)? validator;
   final AxisDirection axisDirection;
 
-  const DynamicDropdown({
-    Key? key,
+  const DynamicDropDown({
+    super.key,
+    required this.controller,
     required this.labelText,
     required this.onChanged,
     required this.onSuggestionSelected,
-    required this.onSuggestionCallback,
+    required this.onSuggestionCallBack,
     required this.suggestionBuilder,
-    this.isSearchable = true,
+    this.validator,
+    this.isValidate = true,
     this.axisDirection = AxisDirection.down,
-  }) : super(key: key);
+    this.isSearchable = false,
+  });
 
   @override
-  State<DynamicDropdown> createState() =>
-      _StatefulDynamicDropdownState();
+  _DynamicDropDownState createState() => _DynamicDropDownState();
 }
 
-class _StatefulDynamicDropdownState extends State<DynamicDropdown> {
-  late TextEditingController _controller;
+class _DynamicDropDownState extends State<DynamicDropDown> {
+  final FocusNode _focusNode = FocusNode();
+  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _focusNode.addListener(_onFocusChange);
+    if (widget.validator == null) {}
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _isKeyboardVisible = _focusNode.hasFocus;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color grey = Colors.grey; // Default grey color
-    const Color white = Colors.white;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    return TypeAheadFormField<dynamic>(
-      direction: widget.axisDirection,
-      textFieldConfiguration: TextFieldConfiguration(
-        controller: _controller,
-        enableSuggestions: true,
-        onChanged: widget.onChanged,
-        style: const TextStyle(color: Colors.black, fontSize: 16),
-        decoration: InputDecoration(
-          labelStyle: const TextStyle(color: Colors.black54, fontSize: 16),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: grey, width: 0.0),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: grey, width: 0.0),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(4)),
-            borderSide: BorderSide(width: 0, color: grey),
-          ),
-          disabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(4)),
-            borderSide: BorderSide(width: 0, color: grey),
-          ),
-          contentPadding: const EdgeInsets.all(10),
-          fillColor: white,
-          filled: true,
-          labelText: widget.labelText,
-          suffixIcon: const Icon(
-            Icons.arrow_drop_down,
-            color: grey,
-            size: 30,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            _isKeyboardVisible = true;
+          },
+          child: TypeAheadFormField(
+            direction: widget.axisDirection,
+            textFieldConfiguration: TextFieldConfiguration(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              onChanged: widget.onChanged,
+              style: const TextStyle(color: Colors.black, fontSize: 16),
+              decoration: InputDecoration(
+                labelStyle:
+                    const TextStyle(color: Colors.black54, fontSize: 16),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                  borderSide: BorderSide(width: 0, color: Colors.grey),
+                ),
+                contentPadding: const EdgeInsets.all(10),
+                fillColor: Colors.white,
+                filled: true,
+                labelText: widget.labelText,
+                suffixIcon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey,
+                  size: 30,
+                ),
+              ),
+            ),
+
+            validator: widget.validator ??
+                (widget.isValidate
+                    ? (value) {
+                        if (value == null || value.toString().isEmpty) {
+                          return strPlzFill;
+                        }
+                        return null;
+                      }
+                    : null),
+
+            suggestionsCallback: widget.onSuggestionCallBack,
+            itemBuilder: widget.suggestionBuilder,
+            onSuggestionSelected: widget.onSuggestionSelected,
+            hideKeyboard: !widget.isSearchable,
+            getImmediateSuggestions: true,
+            noItemsFoundBuilder: (context) => const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'No items found',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            suggestionsBoxDecoration: SuggestionsBoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              elevation: 8.0,
+              shadowColor: Colors.black45,
+              scrollbarThumbAlwaysVisible: true,
+              color: Colors.white,
+              constraints: const BoxConstraints(
+                maxHeight: 230.0,
+              ),
+            ),
+            hideSuggestionsOnKeyboardHide: false,
+            // Keep the suggestions visible even when the keyboard is up
+            // hideKeyboardOnDrag: true,
           ),
         ),
-      ),
-      suggestionsCallback: widget.onSuggestionCallback,
-      itemBuilder: widget.suggestionBuilder,
-      onSuggestionSelected: (suggestion) {
-        _controller.text = suggestion.toString();
-        widget.onSuggestionSelected(suggestion);
-      },
-      hideKeyboard: !widget.isSearchable,
-      noItemsFoundBuilder: (context) => const Padding(
-        padding: EdgeInsets.all(8),
-        child: Text(
-          'No items found',
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-      suggestionsBoxDecoration: SuggestionsBoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        elevation: 8.0,
-        shadowColor: Colors.black45,
-        scrollbarThumbAlwaysVisible: true,
-        color: white,
-        constraints: const BoxConstraints(
-          maxHeight: 200.0, // Adjust height as needed
-        ),
-      ),
+        _focusNode.hasFocus
+            ? const SizedBox(
+                height: 200,
+              )
+            : const SizedBox()
+      ],
     );
   }
 }

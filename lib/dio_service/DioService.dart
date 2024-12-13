@@ -4,10 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class DioService {
   //klklkkl
-  Dio? _dio;
+  static Dio? _dio;
   static SharedPreferences? prefs;
   static final DioService _singleton = DioService._internal();
-  var _token = "";
+  static var _token = "";
   factory DioService() {
     return _singleton;
   }
@@ -16,15 +16,15 @@ class DioService {
     initializeDio();
   }
 
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     if (prefs == null) {
       prefs = await SharedPreferences.getInstance();
     }
-    _token = prefs!.getString("accessToken")!;
+    _token = prefs!.getString("accessToken") ?? "F";
     return _token;
   }
 
-  getHeader() async {
+  static getHeader() async {
     var token = await getToken();
     return {
       'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ class DioService {
     };
   }
 
-  Future<void> initializeDio() async {
+  static Future<void> initializeDio() async {
     _dio = Dio(
       BaseOptions(
         baseUrl:
